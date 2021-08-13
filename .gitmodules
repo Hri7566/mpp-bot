@@ -1,0 +1,3 @@
+[submodule "src/ts/MPP/mpp-frontend-ts"]
+	path = src/ts/MPP/mpp-frontend-ts
+	url = https://github.com/multiplayerpiano/mpp-frontend-ts
