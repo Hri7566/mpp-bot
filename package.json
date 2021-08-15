@@ -1,7 +1,7 @@
 {
   "name": "mpp-bot",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/src/node.js",
   "license": "MIT",
   "dependencies": {
     "idb": "^6.1.2",

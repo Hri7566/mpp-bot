@@ -1,5 +1,5 @@
 import { Client, InMessageA } from "./Client";
-import { Database } from "./Database";
+import { Database, UserSchema } from "./Database";
 import { getGroupString, Group } from "./Group";
 import { Prefix } from "./Prefix";
 import { Registry } from "./Registry";
@@ -90,7 +90,17 @@ class Command {
         }, Group.USER, false);
 
         new Command('about', ['about', 'a'], `{PREFIX}about`, `Display info about the bot.`, 0, (msg, cl) => {
-            return `This bot was written by Hri7566 using TypeScript and Webpack. Source might be available soon.`;
+            let totalCmds = 0;
+
+            Registry.forEach((obj, key) => {
+                if (key.startsWith('command')) totalCmds++;
+            });
+
+            return `This bot was written by Hri7566 using TypeScript and Webpack. Total number of commands: ${totalCmds}`;
+        }, Group.USER, false);
+
+        new Command('id', ['id'], `{PREFIX}id`, `Get your ID.`, 0, (msg, cl) => {
+            return `Your ID: ${msg.p._id}`;
         }, Group.USER, false);
 
         new Command('js', ['js', 'eval'], `{PREFIX}js [eval]`, `Run JavaScript from inside the bot.`, 1, (msg, cl) => {
@@ -132,7 +142,118 @@ class Command {
 
             return `${user.name}'s rank is now ${getGroupString(user.permission)} [${user.permission}].`;
         }, Group.MOD, false);
+
+        new Command('8ball', ['8ball', 'magic8ball', '8'], `{PREFIX}8ball [polar question]`, `By the laws of the known universe, this command HAS to be in every bot.`, 1, (msg, cl) => {
+            const arr = [
+                "It is Certain", "It is decidedly so", "Without a doubt", "Yes definitely", "You may rely on it",
+                "As I see it, yes", "Most likely", "Outlook good", "Yes", "Signs point to yes",
+                "Reply hazy, try again", "Ask again later", "Better not tell you now", "Cannot predict now", "Concentrate and ask again",
+                "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful"
+            ]
+
+            return `${arr[Math.random() * arr.length]}, ${msg.p.name}.`;
+        }, Group.USER, false);
+
+        new Command('say', ['say'], `{PREFIX}say [string]`, `Make me talk.`, 1, (msg, cl) => {
+            return msg.argcat;
+        }, Group.USER, false);
+
+        new Command('reverse', ['reverse'], `{PREFIX}reverse [string]`, `Reverse text.`, 1, (msg, cl) => {
+            let reversed = msg.argcat.split('').reverse().join('')
+            return `Reversed: ${reversed}`;
+        }, Group.USER, false);
+
+        new Command('gamemode', ['gamemode'], `{PREFIX}gamemode (survival|creative|spectator|adventure)`, `Change your gamemode.`, 0, (msg, cl) => {
+            let gamemode = 'survival';
+            if (msg.args[1]) {
+                let regex = /(survival|creative|adventure|spectator)/i;
+
+                if (!msg.user.flags.hasOwnProperty('gamemode')) msg.user.flags.set('gamemode', gamemode);
+                if (!regex.test(msg.args[1])) return `Your gamemode can only be survival, creative, spectator, or adventure.`;
+
+                msg.user.flags.set('gamemode', msg.args[1].toLowerCase());
+                Database.setUser(msg.user);
+
+                return `Your gamemode was set to ${msg.user.flags.get('gamemode')} mode.`;
+            } else {
+                if (msg.user.flags.get('gamemode')) {
+                    gamemode = msg.user.flags.get('gamemode');
+                }
+                return `Your current gamemode is ${gamemode} mode.`;
+            }
+        }, Group.USER, true);
+
+        let ensureInventory = (user : UserSchema) => {
+            let hasInv = user.flags.has('inventory');
+
+            if (hasInv == false) {
+                user.flags.set('inventory', new Map());
+                Database.setUser(user);
+            }
+
+            return user.flags.get('inventory');
+        }
+
+        interface ItemSchema {
+            id: string;
+            name: string;
+            count: number;
+            flags: Map<string, any>;
+        }
+
+        new Command('inventory', ['inventory', 'inv'], `{PREFIX}inventory (user)`, `Check inventory.`, 0, async (msg, cl) => {
+            let user = msg.user;
+
+            if (msg.args[1]) user = await Database.findUser(Bot.getPartFuzzy(msg.argcat));
+            if (!user || typeof user == 'undefined') return `Could not find user '${msg.argcat}'.`;
+
+            let inventory : Map<string, ItemSchema> = ensureInventory(user);
+
+            let out = msg.args[1] ? `${user.name}'s inventory: ` : `Inventory: `;
+            let orig = out;
+
+            inventory.forEach((item, key) => {
+                out += `${item.name} (x${item.count}) | `;
+            });
+
+            if (out.length <= orig.length) {
+                out += "(none)";
+            } else {
+                out = out.substr(0, out.length - 2).trim();
+            }
+
+            return out;
+        }, Group.USER, false);
+
+        let ensureBalance = (user : UserSchema) => {
+            let hasBal = user.flags.has('balance');
+
+            if (hasBal == false) {
+                user.flags.set('balance', 0);
+                Database.setUser(user);
+            }
+
+            return user.flags.get('balance');
+        }
+
+        let balFormat = (bal : number) => {
+            return `$${bal.toFixed(2)}`;
+        }
+
+        new Command('balance', ['balance', 'bal'], `{PREFIX}balance (user)`, `Check balance.`, 0, async (msg, cl) => {
+            let user = msg.user;
+
+            if (msg.args[1]) user = await Database.findUser(Bot.getPartFuzzy(msg.argcat));
+            if (!user || typeof user == 'undefined') return `Could not find user '${msg.argcat}'.`;
+
+            let bal : number = ensureBalance(user);
+
+            let out = msg.args[1] ? `${user.name}'s balance: ${balFormat(bal)}` : `Balance: ${balFormat(bal)}`;
+
+            return out;
+        }, Group.USER, false);
     }
+
 
     static forEach(fn : (cmd : Command) => any) {
         Registry.forEach((val : any, key : string) => {

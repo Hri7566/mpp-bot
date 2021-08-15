@@ -7,7 +7,7 @@ interface UserSchema {
     name : string;
     color : string;
     permission : Group;
-    flags : Map<string, boolean>;
+    flags : Map<string, any>;
 }
 
 class Database {
@@ -65,5 +65,6 @@ class Database {
 }
 
 export {
-    Database
+    Database,
+    UserSchema
 }

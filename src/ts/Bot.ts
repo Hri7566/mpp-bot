@@ -4,6 +4,7 @@ import { Prefix } from "./Prefix";
 import { Database } from "./Database";
 import { Command } from "./Command";
 import { Group } from "./Group";
+import { Registry } from "./Registry";
 
 class Bot extends StaticEventEmitter {
     static client : Client;
@@ -12,6 +13,8 @@ class Bot extends StaticEventEmitter {
 
     static command = Command;
 
+    static registry : Map<string, any>;
+
     static start(cl : Client) {
         this.client = cl;
 
@@ -19,6 +22,8 @@ class Bot extends StaticEventEmitter {
 
         this.bind();
         this.bindClientListeners();
+
+        this.registry = Registry;
 
         this.emit('ready');
     }
