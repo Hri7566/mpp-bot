@@ -4,6 +4,8 @@
   "main": "dist/src/node.js",
   "license": "MIT",
   "dependencies": {
+    "@types/faker": "^5.5.8",
+    "faker": "^5.5.3",
     "idb": "^6.1.2",
     "jquery": "^3.6.0",
     "ts-loader": "^9.2.5",

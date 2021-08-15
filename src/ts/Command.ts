@@ -3,6 +3,7 @@ import { Database, UserSchema } from "./Database";
 import { getGroupString, Group } from "./Group";
 import { Prefix } from "./Prefix";
 import { Registry } from "./Registry";
+import * as faker from "faker";
 
 interface InMessageAExtended extends InMessageA {
     [key : string] : any;
@@ -251,6 +252,35 @@ class Command {
             let out = msg.args[1] ? `${user.name}'s balance: ${balFormat(bal)}` : `Balance: ${balFormat(bal)}`;
 
             return out;
+        }, Group.USER, false);
+
+        new Command('roll', ['roll'], `{PREFIX}roll`, `Roll a die.`, 0, (msg, cl) => {
+            let dice : string = "⚀⚁⚂⚃⚄⚅";
+            let r : number = Math.random() * 5;
+            return `Die: ${Math.ceil(r)} ${dice.charAt(r)}`
+        }, Group.USER, false);
+
+        new Command('eat', ['eat'], `{PREFIX}eat (food)`, `Eat food.`, 0, (msg, cl) => {
+            let foodArr = [
+                'a redcurrant', 'a nut', 'a jujube', 'a kiwi fruit', 'a blood orange', 'a raspberry',
+                'a cucumber', 'an apricot', 'a mandarine', 'a star fruit', 'a date', 'a tomato', 'a blackberry',
+                'a grapefruit', 'a satsuma', 'a tangerine', 'a watermelon', 'a goji berry', 'a gooseberry',
+                'a pineapple', 'a chili pepper', 'an elderberry', 'a pomelo', 'a coconut', 'a pear', 'a lychee',
+                'a quince', 'an avocado', 'a boysenberry', 'a persimmon', 'a clementine', 'a lime', 'a passionfruit',
+                'a tamarillo', 'a grape', 'a banana', 'a honeydew', 'a tomato', 'a peach', 'a strawberry', 'an apple',
+                'mushrooms', 'bacon', 'a sun-dried tomato', 'meatballs', 'ham', 'grilled onions', 'anchovies', 'green peppers',
+                'sausage', 'garlic', 'hot sauce', 'artichoke', 'pineapple', 'spinach', 'green peppers', 'olives', 'pepperoni',
+                'onions', 'meatballs', 'cheese', 'tomato sauce', 'ground beef', 'feta', 'cheese sauce', 'toast', 'a stick of butter',
+                'margarine', 'steak', 'an entire tub of mayonnaise', 'a cheeseburger', 'a hamburger', 'a raw beef patty', 'a turkey leg', 'a chicken leg',
+                'a turkey breast', 'a chicken breast', 'lobster', 'a baguette', 'an entire bottle of ketchup', 'an entire bottle of mustard',
+                'chocolate sprinkles', 'cake', 'all of the salt in the salt shaker', 'all of the pepper in the pepper grinder',
+                'lambchops', 'porkchops', 'an entire head of lettuce', 'PB&J', 'scrambled eggs', 'an omelette',
+                'chocolate', 'a burrito', 'bread', 'cabbage'
+            ];
+
+            let food = foodArr[Math.floor(Math.random() * foodArr.length)];
+            if (msg.args[1]) food = msg.argcat;
+            return `${msg.p.name} ate ${food}.`;
         }, Group.USER, false);
     }
 
