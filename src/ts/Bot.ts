@@ -5,6 +5,7 @@ import { Database } from "./Database";
 import { Command } from "./Command";
 import { Group } from "./Group";
 import { Registry } from "./Registry";
+import { Job } from "./Jobs";
 
 class Bot extends StaticEventEmitter {
     static client : Client;
@@ -39,6 +40,12 @@ class Bot extends StaticEventEmitter {
         this.on('ready', () => {
             Command.registerDefaultCommands();
             Prefix.registerDefaultPrefixes();
+            Job.registerDefaultJobs();
+
+            if (!Job.workStarted) {
+                Job.workStarted = true;
+                Job.workTick();
+            }
         });
     }
 

@@ -4,6 +4,7 @@ import { getGroupString, Group } from "./Group";
 import { Prefix } from "./Prefix";
 import { Registry } from "./Registry";
 import * as faker from "faker";
+import { Job } from "./Jobs";
 
 interface InMessageAExtended extends InMessageA {
     [key : string] : any;
@@ -226,32 +227,35 @@ class Command {
             return out;
         }, Group.USER, false);
 
-        let ensureBalance = (user : UserSchema) => {
-            let hasBal = user.flags.has('balance');
-
-            if (hasBal == false) {
-                user.flags.set('balance', 0);
-                Database.setUser(user);
-            }
-
-            return user.flags.get('balance');
-        }
-
-        let balFormat = (bal : number) => {
-            return `$${bal.toFixed(2)}`;
-        }
-
         new Command('balance', ['balance', 'bal'], `{PREFIX}balance (user)`, `Check balance.`, 0, async (msg, cl) => {
             let user = msg.user;
 
             if (msg.args[1]) user = await Database.findUser(Bot.getPartFuzzy(msg.argcat));
             if (!user || typeof user == 'undefined') return `Could not find user '${msg.argcat}'.`;
 
-            let bal : number = ensureBalance(user);
+            let bal : number = Job.ensureBalance(user);
 
-            let out = msg.args[1] ? `${user.name}'s balance: ${balFormat(bal)}` : `Balance: ${balFormat(bal)}`;
+            let out = msg.args[1] ? `${user.name}'s balance: ${Job.balFormat(bal)}` : `Balance: ${Job.balFormat(bal)}`;
 
             return out;
+        }, Group.USER, false);
+
+        new Command('work', ['work', 'job'], `{PREFIX}work (job)`, `Work.`, 1, async (msg, cl) => {
+            if (Job.hasJob(msg.user)) return `You are already working!`;
+            let jobExists = false;
+            let darr : string[] = [];
+            let job : Job;
+            Job.forEach(j => {
+                darr.push(j.displayName);
+                if (msg.argcat.toLowerCase() == j.displayName.toLowerCase() || msg.argcat.toLowerCase() == j.id.toLowerCase()) {
+                    jobExists = true;
+                    job = j;
+                }
+            });
+
+            if (!jobExists) return `You can only pick one of the following: ${darr.join(', ')}`;
+            Job.setJob(msg.user, job.id);
+            return `${msg.p.name} started working as a ${job.displayName}.`;
         }, Group.USER, false);
 
         new Command('roll', ['roll'], `{PREFIX}roll`, `Roll a die.`, 0, (msg, cl) => {
@@ -283,7 +287,6 @@ class Command {
             return `${msg.p.name} ate ${food}.`;
         }, Group.USER, false);
     }
-
 
     static forEach(fn : (cmd : Command) => any) {
         Registry.forEach((val : any, key : string) => {
