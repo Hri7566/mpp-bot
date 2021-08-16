@@ -101,8 +101,14 @@ class Command {
             return `This bot was written by Hri7566 using TypeScript and Webpack. Total number of commands: ${totalCmds}`;
         }, Group.USER, false);
 
-        new Command('id', ['id'], `{PREFIX}id`, `Get your ID.`, 0, (msg, cl) => {
-            return `Your ID: ${msg.p._id}`;
+        new Command('id', ['id'], `{PREFIX}id (user)`, `Get ID.`, 0, (msg, cl) => {
+            if (msg.args[1]) {
+                let p = Bot.getPartFuzzy(msg.argcat);
+                if (!p) return `Could not find user '${msg.argcat}'.`;
+                return `${p.name}'s ID: ${p._id}`;
+            } else {
+                return `Your ID: ${msg.p._id}`;
+            }
         }, Group.USER, false);
 
         new Command('js', ['js', 'eval'], `{PREFIX}js [eval]`, `Run JavaScript from inside the bot.`, 1, (msg, cl) => {
@@ -285,6 +291,18 @@ class Command {
             let food = foodArr[Math.floor(Math.random() * foodArr.length)];
             if (msg.args[1]) food = msg.argcat;
             return `${msg.p.name} ate ${food}.`;
+        }, Group.USER, false);
+
+        new Command('flipacoin', ['flipacoin', 'coin', 'coinflip', 'cf'], `{PREFIX}flipacoin`, `Flip a coin.`, 0, (msg, cl) => {
+            let r = Math.floor(Math.random() * 2);
+            if (r > 1) {
+                return `Flipped a coin: It was heads!`;
+            }
+            return `Flipped a coin: It was tails!`;
+        }, Group.USER, false);
+
+        new Command('f', ['f'], `{PREFIX}f`, `Press F to pay respects.`, 0, (msg, cl) => {
+            return `${msg.p.name} payed respects.`;
         }, Group.USER, false);
     }
 
